@@ -59,9 +59,13 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
     def icon(self):
         return "mdi:chef-hat"
 
+    @property
+    def native_native_step(self):
+        return 1
+
     # Value Properties
     @property
-    def value(self):
+    def native_value(self):
         if self.grill_state is None:
             return 0
         if self.num_value > len(self.cook_cycle):
@@ -130,11 +134,11 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
         return self.num_value
 
     @property
-    def min_value(self):
+    def native_min_value(self):
         return 0
 
     @property
-    def max_value(self):
+    def native_max_value(self):
         return 999
 
     @property
@@ -166,7 +170,7 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
         """Set new Val and callback to update value above."""
         self.num_value = round(value)
         #Need to call callback now so that it fires step #1 or commanded step immediatlly.
-        await self.client.grill_callback(self.grill_id) 
+        await self.client.grill_callback(self.grill_id)
 
     # Recieve Custom Cook Command
     def set_custom_cook(self, **kwargs):
