@@ -1,11 +1,6 @@
 {
   "domain": "traeger",
   "name": "Traeger",
-  "documentation": "https://github.com/njobrien1006/hass_traeger",
-  "issue_tracker": "https://github.com/njobrien1006/hass_traeger/issues",
-  "iot_class": "cloud_push",
-  "dependencies": [],
-  "config_flow": true,
   "codeowners": [
     "@sebirdman",
     "@Velines",
@@ -13,7 +8,12 @@
     "@stephenpapierski",
     "@njobrien1006",
     "@noelbundick"
-    ],
+    ],  
+  "config_flow": true,
+  "dependencies": [],  
+  "documentation": "https://github.com/njobrien1006/hass_traeger",
+  "issue_tracker": "https://github.com/njobrien1006/hass_traeger/issues",
+  "iot_class": "cloud_push",
   "requirements": [],
   "version": "2023.05.19"
 }
