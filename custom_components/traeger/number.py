@@ -69,7 +69,7 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
             self.num_value = 0
         if self.num_value > 0 and not(4 <= self.grill_state["system_status"] <= 6):
             _LOGGER.info(f"Steps not available when not cooking. Revert to 0.")
-            self.num_value = 0
+            #self.num_value = 0 This causes issues when/if the grill looses connection
         ########################################################################
         #Scan for next step advance
         if self.num_value > 0 and self.num_value == self.old_num_value:
