@@ -94,5 +94,5 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 [probeimg]: probe.png
 [grillimg]: grill.png
 [license-shield]: https://img.shields.io/github/license/custom-components/blueprint.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/v/release/sebirdman/hass_traeger.svg?style=for-the-badge
-[releases]: https://github.com/sebirdman/hass_traeger/releases
+[releases-shield]: https://img.shields.io/github/v/release/njobrien1006/hass_traeger.svg?style=for-the-badge
+[releases]: https://github.com/njobrien1006/hass_traeger/releases

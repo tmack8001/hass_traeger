@@ -2,7 +2,7 @@
 Custom integration to integrate traeger with Home Assistant.
 
 For more details about this integration, please refer to
-https://github.com/sebirdman/hass_traeger
+https://github.com/njobrien1006/hass_traeger
 """
 import asyncio
 from datetime import timedelta
