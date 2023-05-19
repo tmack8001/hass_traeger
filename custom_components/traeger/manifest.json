@@ -2,12 +2,12 @@
   "domain": "traeger",
   "name": "Traeger",
   "codeowners": [
-    "@sebirdman",
-    "@Velines",
     "@krbaker",
-    "@stephenpapierski",
     "@njobrien1006",
-    "@noelbundick"
+    "@noelbundick",
+    "@sebirdman",
+    "@stephenpapierski",
+    "@Velines"
     ],  
   "config_flow": true,
   "documentation": "https://github.com/njobrien1006/hass_traeger",
