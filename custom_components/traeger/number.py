@@ -193,7 +193,7 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
         return attributes
 
     # Value Set Method
-    async def async_set_value(self, value: float):
+    async def async_set_native_value(self, value: float):
         """Set new Val and callback to update value above."""
         self.num_value = round(value)
         #Need to call callback now so that it fires step #1 or commanded step immediatlly.
