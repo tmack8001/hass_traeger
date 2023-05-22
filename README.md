@@ -21,6 +21,11 @@ Platform | Description
 ![grill][grillimg]
 ![probe][probeimg]
 
+## Installation (HACS)
+
+1. Add this repository to HACS
+2. Search for Traeger in HACS
+
 ## Installation (Manual)
 
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
@@ -71,10 +76,33 @@ State | Description
 `at_temp` | Probe alarm has fired
 `fell_out` | Probe probably fell out of the meat (Probe temperature is greater that 215°F)
 
-## Installation (HACS)
+### Cook Cycle Number
+This number indicates the current cook step. It runs the cook cycle as called by the `set_custom_cook` service.
+State | Description
+-- | --
+`number.cook_cycl_step` | Full list of cook steps. Must be set by `set_custom_cook`.
+`number.prev_step` | The previous step.
+`number.curr_step` | The current step.
+`number.next_step` | The next step.
 
-1. Add this repository to HACS
-2. Search for Traeger in HACS
+### set_custom_cook Service
+Service to set the list of steps for a cook sequence. The service must be againts `number.____cook_cycle`.
+
+See `Developer Tools : SERVICES : Traeger: Set Cook Cycle` for a default cook steps list.
+Step Type | Description
+-- | --
+`service[].set_temp` | Set Grill Temp. *Only up to your grill's MaxTemp.
+`service[].smoke` | Set Smoke Mode 1 or 0. *Only Avail if grill supports.
+`service[].keepwarm` | Set keepwarm, Mode 1 or 0.
+`service[].time_set` | Set Timer in Minutes.
+`service[].use_timer` | Use Timer to Advance State. *Only applies to current state.
+`service[].min_delta` | Min DELTA temp between Grill and Probe. *Requires `max_grill_delta_temp`.
+`service[].max_grill_delta_temp` | Max Temp it will increase to from probe `min_delta`. *Requires `min_delta`.
+`service[].act_temp_adv` | Grill Temp at which the State will advance.
+`service[].probe_act_temp_adv` | Probe Temp at which the State will advance.
+`service[].shutdown` | Call Grill Shutdown.
+
+
 
 ## Configuration is done in the UI
 
