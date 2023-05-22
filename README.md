@@ -37,12 +37,12 @@ Platform | Description
 7. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Traeger"
 
 ## Platform Details
-Some of the platforms are fairly self explanatory, others could use a little more explaining. Below are more details on some of those platforms.
+Some of the platforms are fairly self-explanatory, others could use a little more explaining. Below are more details on some of those platforms.
 ### Grill State Sensor
 This sensor aligns with the status values in the Traeger app.
 State | Description
 -- | --
-`offline` | Powered off (or not accesible)
+`offline` | Powered off (or not accessible)
 `sleeping` | Standing by (power switch on, screen off)
 `idle` | Standing by (power switch on, screen on)
 `igniting` | Igniting the fire pot
@@ -51,7 +51,7 @@ State | Description
 `custom_cook` | Cooking mode, using preset cook cycle
 `cool_down` | Cool down cycle
 `shutdown` | Cool down cycle complete, heading to sleep
-`unknown` | Unkown state, report to developers
+`unknown` | Unknown state, report to developers
 
 ### Heating State Sensor
 This sensor tries to provide more useful insight into the heating status of the grill. Many of these values can be trigger off of to provide notifications that are not available in the Traeger app.
@@ -74,7 +74,7 @@ State | Description
 `set` | Probe target temperature **is** set
 `close` | Probe temperature is within 5°F of target temperature
 `at_temp` | Probe alarm has fired
-`fell_out` | Probe probably fell out of the meat (Probe temperature is greater that 215°F)
+`fell_out` | Probe probably fell out of the meat (Probe temperature is greater than 215°F)
 
 ### Cook Cycle Number
 This number indicates the current cook step. It runs the cook cycle as called by the `set_custom_cook` service.
@@ -86,7 +86,7 @@ State | Description
 `number.next_step` | The next step.
 
 ### set_custom_cook Service
-Service to set the list of steps for a cook sequence. The service must be againts `number.____cook_cycle`.
+Service to set the list of steps for a cook sequence. The service must be against `number.____cook_cycle`.
 
 See `Developer Tools : SERVICES : Traeger: Set Cook Cycle` for a default cook steps list.
 Step Type | Description
