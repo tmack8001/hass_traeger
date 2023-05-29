@@ -249,7 +249,8 @@ class traeger:
         _LOGGER.debug(
             f"Connect Fail Callback. Client:{client} userdata:{userdata}")
         _LOGGER.warning("Grill Connect Failed! MQTT Client Kill.")
-        asyncio.run_coroutine_threadsafe(self.kill(), self.loop) #Shutdown if we arn't getting anywhere.
+        asyncio.run_coroutine_threadsafe(
+            self.kill(), self.loop)  #Shutdown if we arn't getting anywhere.
 
     def mqtt_onsubscribe(self, client, userdata, mid, granted_qos):
         _LOGGER.debug(
@@ -259,7 +260,8 @@ class traeger:
             grill_id = grill["thingName"]
             if grill_id in self.grill_status:
                 del self.grill_status[grill_id]
-            asyncio.run_coroutine_threadsafe(self.update_state(grill_id), self.loop)
+            asyncio.run_coroutine_threadsafe(self.update_state(grill_id),
+                                             self.loop)
 
     def mqtt_onmessage(self, client, userdata, message):
         _LOGGER.debug("grill_message: message.topic = %s, message.payload = %s",
@@ -270,7 +272,8 @@ class traeger:
         if message.topic.startswith("prod/thing/update/"):
             grill_id = message.topic[len("prod/thing/update/"):]
             self.grill_status[grill_id] = json.loads(message.payload)
-            asyncio.run_coroutine_threadsafe(self.grill_callback(grill_id), self.loop)
+            asyncio.run_coroutine_threadsafe(self.grill_callback(grill_id),
+                                             self.loop)
             if self.grills_active == False:  #Go see if any grills are doing work.
                 for grill in self.grills:  #If nobody is working next MQTT refresh
                     grill_id = grill["thingName"]  #It'll call kill.
