@@ -8,15 +8,20 @@ from homeassistant.components.number import NumberEntity
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_platform
 
-from .const import (DOMAIN, GRILL_MODE_COOL_DOWN, GRILL_MODE_IDLE,
-                    GRILL_MODE_SHUTDOWN, GRILL_MODE_SLEEPING)
+from .const import (
+    DOMAIN,
+    GRILL_MODE_COOL_DOWN,
+    GRILL_MODE_IDLE,
+    GRILL_MODE_SHUTDOWN,
+    GRILL_MODE_SLEEPING,
+)
 from .entity import TraegerBaseEntity
 
 SERVICE_CUSTOMCOOK = "set_custom_cook"
 ENTITY_ID = "entity_id"
 SCHEMA_CUSTOMCOOK = {
     vol.Required(ENTITY_ID): cv.string,
-    vol.Required("steps", default=dict): list
+    vol.Required("steps", default=dict): list,
 }
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -28,16 +33,18 @@ async def async_setup_entry(hass, entry, async_add_devices):
     Setup Service platform.
     """
     platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(SERVICE_CUSTOMCOOK,
-                                           SCHEMA_CUSTOMCOOK, "set_custom_cook")
+    platform.async_register_entity_service(
+        SERVICE_CUSTOMCOOK, SCHEMA_CUSTOMCOOK, "set_custom_cook"
+    )
     client = hass.data[DOMAIN][entry.entry_id]
     grills = client.get_grills()
     for grill in grills:
         async_add_devices(
-            [TraegerNumberEntity(client, grill["thingName"], "cook_timer")])
-        async_add_devices([
-            CookCycNumberEntity(client, grill["thingName"], "cook_cycle", hass)
-        ])
+            [TraegerNumberEntity(client, grill["thingName"], "cook_timer")]
+        )
+        async_add_devices(
+            [CookCycNumberEntity(client, grill["thingName"], "cook_cycle", hass)]
+        )
 
 
 class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
@@ -91,16 +98,18 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
             _LOGGER.info("B.Cook Cycles out of indexes.")
             self.num_value = 0
             return self.num_value
-        name = re.sub('[^A-Za-z0-9]+', '', self.grill_details["friendlyName"])
+        name = re.sub("[^A-Za-z0-9]+", "", self.grill_details["friendlyName"])
         if self.num_value > 0 and self.grill_state["system_status"] in [
-                GRILL_MODE_COOL_DOWN, GRILL_MODE_SLEEPING, GRILL_MODE_SHUTDOWN,
-                GRILL_MODE_IDLE
+            GRILL_MODE_COOL_DOWN,
+            GRILL_MODE_SLEEPING,
+            GRILL_MODE_SHUTDOWN,
+            GRILL_MODE_IDLE,
         ]:
             _LOGGER.info("Steps not available when not cooking. Revert to 0.")
             self.num_value = 0
             return self.num_value
         ########################################################################
-        #Scan for next step advance
+        # Scan for next step advance
         if self.num_value > 0 and self.num_value == self.old_num_value:
             curstep = self.cook_cycle[self.num_value - 1]
             if "use_timer" in curstep:
@@ -116,92 +125,132 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
                 if self.grill_state["probe"] > curstep["probe_act_temp_adv"]:
                     self.num_value = self.num_value + 1
             ####################################################################
-            #In step change
+            # In step change
             if "min_delta" in curstep and "max_grill_delta_temp" in curstep:
-                if curstep["max_grill_delta_temp"] > self.grill_limits[
-                        "max_grill_temp"]:
+                if (
+                    curstep["max_grill_delta_temp"]
+                    > self.grill_limits["max_grill_temp"]
+                ):
                     curstep["max_grill_delta_temp"] = self.grill_limits[
-                        "max_grill_temp"]
+                        "max_grill_temp"
+                    ]
                 if self.grill_state["set"] < curstep["max_grill_delta_temp"]:
-                    if self.grill_state["probe"] > self.grill_state[
-                            "set"] - curstep["min_delta"]:
+                    if (
+                        self.grill_state["probe"]
+                        > self.grill_state["set"] - curstep["min_delta"]
+                    ):
                         set_temp = self.grill_state["set"] + 5
                         self.hass.async_create_task(
                             self.hass.services.async_call(
-                                "climate", "set_temperature", {
-                                    "entity_id":
-                                        f"climate.{self.grill_id}_climate",
-                                    "temperature":
-                                        round(set_temp)
-                                }, False))
+                                "climate",
+                                "set_temperature",
+                                {
+                                    "entity_id": f"climate.{self.grill_id}_climate",
+                                    "temperature": round(set_temp),
+                                },
+                                False,
+                            )
+                        )
         ########################################################################
-        #Implement next step
-        if self.num_value > 0 and self.num_value != self.old_num_value:  #Only hit once per step.
+        # Implement next step
+        if (
+            self.num_value > 0 and self.num_value != self.old_num_value
+        ):  # Only hit once per step.
             curstep = self.cook_cycle[self.num_value - 1]
             if "time_set" in curstep:
                 self.hass.async_create_task(
                     self.hass.services.async_call(
-                        "number", "set_value", {
+                        "number",
+                        "set_value",
+                        {
                             "entity_id": f"number.{self.grill_id}_cook_timer",
-                            "value": round(curstep["time_set"])
-                        }, False))
+                            "value": round(curstep["time_set"]),
+                        },
+                        False,
+                    )
+                )
             if "probe_set_temp" in curstep:
-                name = re.sub('[^A-Za-z0-9]+', '',
-                              self.grill_details["friendlyName"])
+                name = re.sub("[^A-Za-z0-9]+", "", self.grill_details["friendlyName"])
                 self.hass.async_create_task(
                     self.hass.services.async_call(
-                        "climate", "set_temperature", {
+                        "climate",
+                        "set_temperature",
+                        {
                             "entity_id": f"climate.{name.lower()}_probe_p0",
-                            "temperature": round(curstep["probe_set_temp"])
-                        }, False))
+                            "temperature": round(curstep["probe_set_temp"]),
+                        },
+                        False,
+                    )
+                )
             if "set_temp" in curstep:
                 self.hass.async_create_task(
                     self.hass.services.async_call(
-                        "climate", "set_temperature", {
+                        "climate",
+                        "set_temperature",
+                        {
                             "entity_id": f"climate.{self.grill_id}_climate",
-                            "temperature": round(curstep["set_temp"])
-                        }, False))
+                            "temperature": round(curstep["set_temp"]),
+                        },
+                        False,
+                    )
+                )
             if "smoke" in curstep:
-                if self.grill_features[
-                        "super_smoke_enabled"] == 1 and self.grill_state[
-                            "smoke"] != curstep["smoke"] and self.grill_state[
-                                "set"] <= 225:
+                if (
+                    self.grill_features["super_smoke_enabled"] == 1
+                    and self.grill_state["smoke"] != curstep["smoke"]
+                    and self.grill_state["set"] <= 225
+                ):
                     if curstep["smoke"] == 1:
                         self.hass.async_create_task(
                             self.hass.services.async_call(
-                                "switch", "turn_on",
+                                "switch",
+                                "turn_on",
                                 {"entity_id": f"switch.{self.grill_id}_smoke"},
-                                False))
+                                False,
+                            )
+                        )
                     else:
                         self.hass.async_create_task(
                             self.hass.services.async_call(
-                                "switch", "turn_off",
+                                "switch",
+                                "turn_off",
                                 {"entity_id": f"switch.{self.grill_id}_smoke"},
-                                False))
+                                False,
+                            )
+                        )
             if "keepwarm" in curstep:
                 if self.grill_state["keepwarm"] != curstep["keepwarm"]:
                     if curstep["keepwarm"] == 1:
                         self.hass.async_create_task(
                             self.hass.services.async_call(
-                                "switch", "turn_on", {
-                                    "entity_id":
-                                        f"switch.{self.grill_id}_keepwarm"
-                                }, False))
+                                "switch",
+                                "turn_on",
+                                {"entity_id": f"switch.{self.grill_id}_keepwarm"},
+                                False,
+                            )
+                        )
                     else:
                         self.hass.async_create_task(
                             self.hass.services.async_call(
-                                "switch", "turn_off", {
-                                    "entity_id":
-                                        f"switch.{self.grill_id}_keepwarm"
-                                }, False))
+                                "switch",
+                                "turn_off",
+                                {"entity_id": f"switch.{self.grill_id}_keepwarm"},
+                                False,
+                            )
+                        )
             if "shutdown" in curstep:
                 if curstep["shutdown"] == 1:
                     self.hass.async_create_task(
                         self.hass.services.async_call(
-                            "climate", "set_hvac_mode", {
+                            "climate",
+                            "set_hvac_mode",
+                            {
                                 "entity_id": f"climate.{self.grill_id}_climate",
-                                "hvac_mode": "cool"
-                            }, False))
+                                "hvac_mode": "cool",
+                            },
+                            False,
+                        )
+                    )
                     self.num_value = 0
         self.old_num_value = self.num_value
         _LOGGER.debug("CookCycle Steps:%s", self.cook_cycle)
@@ -223,23 +272,25 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
     @property
     def state_attributes(self):
         """Return the optional state attributes."""
-        #default_attributes = super().state_attributes
+        # default_attributes = super().state_attributes
         prev_step = {}
         curr_step = {}
         next_step = {}
         if self.num_value > 1:
-            prev_step = self.cook_cycle[self.num_value - 2]
+            prev_step = f"{self.num_value - 1}: {self.cook_cycle[self.num_value - 2]}"
         if self.num_value > 0:
-            curr_step = self.cook_cycle[self.num_value - 1]
+            curr_step = f"{self.num_value}: {self.cook_cycle[self.num_value - 1]}"
         if self.num_value < len(self.cook_cycle):
-            next_step = self.cook_cycle[self.num_value]
+            next_step = f"{self.num_value + 1}: {self.cook_cycle[self.num_value]}"
         custom_attributes = {
-            "cook_cycl": self.cook_cycle,
-            "cook_cycl_step": str(self.cook_cycle),
             "prev_step": str(prev_step),
             "curr_step": str(curr_step),
             "next_step": str(next_step),
         }
+        intstep = 1
+        for step in self.cook_cycle:
+            custom_attributes[f"_step{intstep:02d}"] = str(step)
+            intstep = intstep + 1
         attributes = {}
         attributes.update(custom_attributes)
         return attributes
@@ -248,7 +299,7 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
     async def async_set_native_value(self, value: float):
         """Set new Val and callback to update value above."""
         self.num_value = round(value)
-        #Need to call callback now so that it fires step #1 or commanded step immediatlly.
+        # Need to call callback now so that it fires step #1 or commanded step immediatlly.
         await self.client.grill_callback(self.grill_id)
 
     # Recieve Custom Cook Command
@@ -256,9 +307,10 @@ class CookCycNumberEntity(NumberEntity, TraegerBaseEntity):
         """From Service, Update the number's cook cycle steps."""
         self.cook_cycle = kwargs["steps"]
         _LOGGER.info("Traeger: Set Cook Cycle:%s", self.cook_cycle)
-        #Need to call callback now so that it fires state cust atrib update.
+        # Need to call callback now so that it fires state cust atrib update.
         asyncio.run_coroutine_threadsafe(
-            self.client.grill_callback(self.grill_id), self.hass.loop)
+            self.client.grill_callback(self.grill_id), self.hass.loop
+        )
 
 
 class TraegerNumberEntity(NumberEntity, TraegerBaseEntity):

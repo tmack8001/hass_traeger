@@ -7,10 +7,70 @@
       "title": "Home",
         "views": [
           {
-            "path": "default_view",
-            "title": "Home",
+            "icon": "mdi:grill-outline",
             "badges": [],
             "cards": [
+              {
+                "type": "vertical-stack",
+                "cards": [
+                  {
+                    "type": "horizontal-stack",
+                    "cards": [
+                      {
+                        "type": "thermostat",
+                        "entity": "climate.0123456789ab_climate"
+                      },
+                      {
+                        "type": "thermostat",
+                        "entity": "climate.friendlyname_probe_p0"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "entities",
+                    "entities": [
+                      {
+                        "entity": "switch.0123456789ab_connect"
+                      },
+                      {
+                        "entity": "switch.0123456789ab_smoke"
+                      },
+                      {
+                        "entity": "switch.0123456789ab_keepwarm"
+                      },
+                      {
+                        "entity": "sensor.0123456789ab_ambient_temperature"
+                      },
+                      {
+                        "entity": "sensor.0123456789ab_pellet_level"
+                      },
+                      {
+                        "entity": "number.0123456789ab_cook_cycle"
+                      },
+                      {
+                        "entity": "number.0123456789ab_cook_timer"
+                      },
+                      {
+                        "entity": "sensor.0123456789ab_cook_timer_start"
+                      },
+                      {
+                        "entity": "sensor.0123456789ab_cook_timer_end"
+                      },
+                      {
+                        "entity": "binary_sensor.0123456789ab_cook_timer_complete"
+                      },
+                      {
+                        "entity": "sensor.friendlyname_probe_state_p0"
+                      },
+                      {
+                        "entity": "sensor.0123456789ab_heating_state"
+                      }
+                    ],
+                    "title": "Traeger",
+                    "show_header_toggle": false
+                  }
+                ]
+              },
               {
                 "type": "vertical-stack",
                 "cards": [
@@ -282,7 +342,8 @@
                               {
                                 "set_temp": 200,
                                 "use_timer": 1,
-                                "time_set": 20
+                                "time_set": 20,
+                                "smoke": 1
                               },
                               {
                                 "set_temp": 180,
@@ -292,7 +353,7 @@
                               {
                                 "set_temp": 190,
                                 "use_timer": 1,
-                                "time_set": 1800
+                                "time_set": 30
                               },
                               {
                                 "set_temp": 195,
@@ -437,7 +498,7 @@
                           "key": "number.0123456789ab_cook_cycle.next_step"
                         },
                         {
-                          "key": "number.0123456789ab_cook_cycle.cook_cycl_step"
+                          "key": "number.0123456789ab_cook_cycle._step*"
                         }
                       ]
                     }
@@ -453,81 +514,19 @@
                 "type": "vertical-stack",
                 "cards": [
                   {
-                    "type": "entities",
-                    "entities": [
-                      {
-                        "entity": "switch.0123456789ab_connect"
-                      },
-                      {
-                        "entity": "switch.0123456789ab_smoke"
-                      },
-                      {
-                        "entity": "switch.0123456789ab_keepwarm"
-                      },
-                      {
-                        "entity": "sensor.0123456789ab_ambient_temperature"
-                      },
-                      {
-                        "entity": "sensor.0123456789ab_pellet_level"
-                      },
-                      {
-                        "entity": "number.0123456789ab_cook_cycle"
-                      },
-                      {
-                        "entity": "number.0123456789ab_cook_timer"
-                      },
-                      {
-                        "entity": "sensor.0123456789ab_cook_timer_start"
-                      },
-                      {
-                        "entity": "sensor.0123456789ab_cook_timer_end"
-                      },
-                      {
-                        "entity": "binary_sensor.0123456789ab_cook_timer_complete"
-                      },
-                      {
-                        "entity": "sensor.friendlyname_probe_state_p0"
-                      },
-                      {
-                        "entity": "sensor.0123456789ab_heating_state"
-                      }
-                    ],
-                    "title": "Traeger",
-                    "show_header_toggle": false
-                  },
-                  {
-                    "type": "horizontal-stack",
-                    "cards": [
-                      {
-                        "type": "thermostat",
-                        "entity": "climate.0123456789ab_climate"
-                      },
-                      {
-                        "type": "thermostat",
-                        "entity": "climate.friendlyname_probe_p0"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "vertical-stack",
-                "cards": [
-                  {
                     "type": "history-graph",
                     "entities": [
                       {
                         "entity": "climate.0123456789ab_climate"
                       },
                       {
-                        "entity": "sensor.0123456789ab_ambient_temperature"
+                        "entity": "climate.friendlyname_probe_p0"
                       },
                       {
-                        "entity": "climate.friendlyname_probe_p0"
+                        "entity": "sensor.0123456789ab_ambient_temperature"
                       }
                     ],
                     "refresh_interval": 0.1,
-                    "title": "Traeger",
                     "hours_to_show": 6
                   },
                   {
@@ -541,8 +540,21 @@
                       }
                     ],
                     "refresh_interval": 0.1,
-                    "title": "Traeger",
                     "hours_to_show": 6
+                  },
+                  {
+                    "type": "custom:epoch-clock-card",
+                    "disable_seconds": false,
+                    "start_time": "sensor.0123456789ab_cook_timer_start",
+                    "end_time": "sensor.0123456789ab_cook_timer_end",
+                    "display_date": "MM/DD/YY HH:mm:ss",
+                    "caption": "Traeger Timer",
+                    "theme": {
+                      "background": "black",
+                      "hands": "orange",
+                      "numbers": "white",
+                      "border": "grey"
+                    }
                   }
                 ]
               }
