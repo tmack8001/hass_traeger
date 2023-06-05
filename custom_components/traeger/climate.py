@@ -1,18 +1,30 @@
 """Climate platform for Traeger grills"""
 from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import (HVAC_MODE_COOL,
-                                                    HVAC_MODE_HEAT,
-                                                    HVAC_MODE_OFF, PRESET_NONE,
-                                                    SUPPORT_PRESET_MODE,
-                                                    SUPPORT_TARGET_TEMPERATURE)
+from homeassistant.components.climate.const import (
+    HVAC_MODE_COOL,
+    HVAC_MODE_HEAT,
+    HVAC_MODE_OFF,
+    PRESET_NONE,
+    SUPPORT_PRESET_MODE,
+    SUPPORT_TARGET_TEMPERATURE,
+)
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT
 
-from .const import (DOMAIN, GRILL_MIN_TEMP_C, GRILL_MIN_TEMP_F,
-                    GRILL_MODE_COOL_DOWN, GRILL_MODE_CUSTOM_COOK,
-                    GRILL_MODE_IDLE, GRILL_MODE_IGNITING,
-                    GRILL_MODE_MANUAL_COOK, GRILL_MODE_OFFLINE,
-                    GRILL_MODE_PREHEATING, GRILL_MODE_SHUTDOWN,
-                    GRILL_MODE_SLEEPING, PROBE_PRESET_MODES)
+from .const import (
+    DOMAIN,
+    GRILL_MIN_TEMP_C,
+    GRILL_MIN_TEMP_F,
+    GRILL_MODE_COOL_DOWN,
+    GRILL_MODE_CUSTOM_COOK,
+    GRILL_MODE_IDLE,
+    GRILL_MODE_IGNITING,
+    GRILL_MODE_MANUAL_COOK,
+    GRILL_MODE_OFFLINE,
+    GRILL_MODE_PREHEATING,
+    GRILL_MODE_SHUTDOWN,
+    GRILL_MODE_SLEEPING,
+    PROBE_PRESET_MODES,
+)
 from .entity import TraegerBaseEntity, TraegerGrillMonitor
 
 
@@ -23,8 +35,9 @@ async def async_setup_entry(hass, entry, async_add_devices):
     for grill in grills:
         grill_id = grill["thingName"]
         async_add_devices([TraegerClimateEntity(client, grill_id, "Climate")])
-        TraegerGrillMonitor(client, grill_id, async_add_devices,
-                            AccessoryTraegerClimateEntity)
+        TraegerGrillMonitor(
+            client, grill_id, async_add_devices, AccessoryTraegerClimateEntity
+        )
 
 
 class TraegerBaseClimate(ClimateEntity, TraegerBaseEntity):
@@ -157,13 +170,27 @@ class TraegerClimateEntity(TraegerBaseClimate):
     # Climate Methods
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
-        temperature = kwargs.get(ATTR_TEMPERATURE)
-        await self.client.set_temperature(self.grill_id, round(temperature))
+        if self.grill_state is None:
+            return
+        state = self.grill_state["system_status"]
+        if GRILL_MODE_IGNITING <= state <= GRILL_MODE_CUSTOM_COOK:
+            temperature = kwargs.get(ATTR_TEMPERATURE)
+            await self.client.set_temperature(self.grill_id, round(temperature))
+            return
+        raise NotImplementedError("Set Temp not supported in current state.")
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Start grill shutdown sequence"""
-        if hvac_mode in (HVAC_MODE_OFF, HVAC_MODE_COOL):
+        if self.grill_state is None:
+            return
+        state = self.grill_state["system_status"]
+        if (
+            hvac_mode in (HVAC_MODE_OFF, HVAC_MODE_COOL)
+            and GRILL_MODE_IGNITING <= state <= GRILL_MODE_CUSTOM_COOK
+        ):
             await self.client.shutdown_grill(self.grill_id)
+            return
+        raise NotImplementedError("Set HVAC mode not supported in current state.")
 
 
 class AccessoryTraegerClimateEntity(TraegerBaseClimate):
@@ -173,18 +200,19 @@ class AccessoryTraegerClimateEntity(TraegerBaseClimate):
         super().__init__(client, grill_id, f"Probe {sensor_id}")
         self.sensor_id = sensor_id
         self.grill_accessory = self.client.get_details_for_accessory(
-            self.grill_id, self.sensor_id)
+            self.grill_id, self.sensor_id
+        )
         self.current_preset_mode = PRESET_NONE
 
         # Tell the Traeger client to call grill_accessory_update() when it gets an update
-        self.client.set_callback_for_grill(self.grill_id,
-                                           self.grill_accessory_update)
+        self.client.set_callback_for_grill(self.grill_id, self.grill_accessory_update)
 
     def grill_accessory_update(self):
         """This gets called when the grill has an update. Update state variable"""
         self.grill_refresh_state()
         self.grill_accessory = self.client.get_details_for_accessory(
-            self.grill_id, self.sensor_id)
+            self.grill_id, self.sensor_id
+        )
 
         if self.hass is None:
             return
@@ -196,9 +224,11 @@ class AccessoryTraegerClimateEntity(TraegerBaseClimate):
     @property
     def available(self):
         """Reports unavailable when the grill is powered off"""
-        if (self.grill_state is None or
-                self.grill_state["connected"] is False or
-                self.grill_accessory is None):
+        if (
+            self.grill_state is None
+            or self.grill_state["connected"] is False
+            or self.grill_accessory is None
+        ):
             return False
         return self.grill_accessory["con"]
 
@@ -269,8 +299,11 @@ class AccessoryTraegerClimateEntity(TraegerBaseClimate):
     @property
     def preset_mode(self):
         """Return the current preset mode, e.g., home, away, temp."""
-        if (self.grill_state is None or self.grill_state["probe_con"] == 0 or
-                self.target_temperature == 0):
+        if (
+            self.grill_state is None
+            or self.grill_state["probe_con"] == 0
+            or self.target_temperature == 0
+        ):
             # Reset current preset mode
             self.current_preset_mode = PRESET_NONE
 
@@ -291,18 +324,17 @@ class AccessoryTraegerClimateEntity(TraegerBaseClimate):
         """Set new target temperature."""
         self.current_preset_mode = PRESET_NONE
         temperature = kwargs.get(ATTR_TEMPERATURE)
-        await self.client.set_probe_temperature(self.grill_id,
-                                                round(temperature))
+        await self.client.set_probe_temperature(self.grill_id, round(temperature))
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Start grill shutdown sequence"""
         if hvac_mode in (HVAC_MODE_OFF, HVAC_MODE_COOL):
             raise NotImplementedError(
-                "HVAC Mode is determined based on the probe being plugged in.")
+                "HVAC Mode is determined based on the probe being plugged in."
+            )
 
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode"""
         self.current_preset_mode = preset_mode
         temperature = PROBE_PRESET_MODES[preset_mode][self.grill_units]
-        await self.client.set_probe_temperature(self.grill_id,
-                                                round(temperature))
+        await self.client.set_probe_temperature(self.grill_id, round(temperature))
