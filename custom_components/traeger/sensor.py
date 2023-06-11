@@ -1,23 +1,12 @@
 """Sensor platform for Traeger."""
-from homeassistant.helpers.entity import Entity
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT
+from homeassistant.const import TEMP_CELSIUS
 
-from .const import (
-    DEFAULT_NAME,
-    DOMAIN,
-    GRILL_MODE_OFFLINE,
-    GRILL_MODE_COOL_DOWN,
-    GRILL_MODE_CUSTOM_COOK,
-    GRILL_MODE_MANUAL_COOK,
-    GRILL_MODE_PREHEATING,
-    GRILL_MODE_IGNITING,
-    GRILL_MODE_IDLE,
-    GRILL_MODE_SLEEPING,
-    GRILL_MODE_SHUTDOWN,
-    GRILL_MIN_TEMP_C,
-    GRILL_MIN_TEMP_F,
-)
-
+from .const import (DOMAIN, GRILL_MIN_TEMP_C, GRILL_MIN_TEMP_F,
+                    GRILL_MODE_COOL_DOWN, GRILL_MODE_CUSTOM_COOK,
+                    GRILL_MODE_IDLE, GRILL_MODE_IGNITING,
+                    GRILL_MODE_MANUAL_COOK, GRILL_MODE_OFFLINE,
+                    GRILL_MODE_PREHEATING, GRILL_MODE_SHUTDOWN,
+                    GRILL_MODE_SLEEPING)
 from .entity import TraegerBaseEntity, TraegerGrillMonitor
 
 
@@ -54,6 +43,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class TraegerBaseSensor(TraegerBaseEntity):
+    """Base Sensor Class Common to All"""
 
     def __init__(self, client, grill_id, friendly_name, value):
         super().__init__(client, grill_id)
@@ -67,8 +57,7 @@ class TraegerBaseSensor(TraegerBaseEntity):
         """Reports unavailable when the grill is powered off"""
         if self.grill_state is None:
             return False
-        else:
-            return self.grill_state["connected"]
+        return self.grill_state["connected"]
 
     @property
     def name(self):
@@ -80,48 +69,50 @@ class TraegerBaseSensor(TraegerBaseEntity):
 
     @property
     def unique_id(self):
+        """Return the unique id."""
         return f"{self.grill_id}_{self.value}"
 
     # Sensor Properties
     @property
     def state(self):
+        """Return the current state of entity."""
         return self.grill_state[self.value]
 
 
 class ValueTemperature(TraegerBaseSensor):
     """Traeger Temperature Value class."""
-
     # Generic Properties
     @property
     def icon(self):
+        """Set the default MDI Icon"""
         return "mdi:thermometer"
 
     # Sensor Properties
     @property
     def unit_of_measurement(self):
+        """Return the unit the value is expressed in."""
         return self.grill_units
 
 
 class PelletSensor(TraegerBaseSensor):
     """Traeger Pellet Sensor class."""
-
     # Generic Properties
     @property
     def available(self):
         """Reports unavailable when the pellet sensor is not connected"""
         if self.grill_features is None:
             return False
-        else:
-            return True if self.grill_features[
-                "pellet_sensor_connected"] == 1 else False
+        return self.grill_features["pellet_sensor_connected"] == 1
 
     @property
     def icon(self):
+        """Set the default MDI Icon"""
         return "mdi:gauge"
 
     # Sensor Properties
     @property
     def unit_of_measurement(self):
+        """Return the unit the value is expressed in."""
         return "%"
 
 
@@ -131,50 +122,53 @@ class GrillTimer(TraegerBaseSensor):
     # Generic Properties
     @property
     def icon(self):
+        """Set the default MDI Icon"""
         return "mdi:timer"
 
     # Sensor Properties
     @property
     def unit_of_measurement(self):
+        """Return the unit the value is expressed in."""
         return "sec"
 
 
 class GrillState(TraegerBaseSensor):
-    """Traeger Grill State class.
+    """
+    Traeger Grill State class.
     These states correlate with the Traeger application.
     """
-
     # Generic Properties
     @property
     def icon(self):
+        """Set the default MDI Icon"""
         return "mdi:grill"
 
     # Sensor Properties
     @property
     def state(self):
-
+        """Return the state of the sensor."""
+        returnval = "unknown"  # Likely a new state we don't know about
         state = self.grill_state["system_status"]
 
         if state == GRILL_MODE_COOL_DOWN:
-            return "cool_down"
+            returnval = "cool_down"
         elif state == GRILL_MODE_CUSTOM_COOK:
-            return "cook_custom"
+            returnval = "cook_custom"
         elif state == GRILL_MODE_MANUAL_COOK:
-            return "cook_manual"
+            returnval = "cook_manual"
         elif state == GRILL_MODE_PREHEATING:
-            return "preheating"
+            returnval = "preheating"
         elif state == GRILL_MODE_IGNITING:
-            return "igniting"
+            returnval = "igniting"
         elif state == GRILL_MODE_IDLE:
-            return "idle"
+            returnval = "idle"
         elif state == GRILL_MODE_SLEEPING:
-            return "sleeping"
+            returnval = "sleeping"
         elif state == GRILL_MODE_OFFLINE:
-            return "offline"
+            returnval = "offline"
         elif state == GRILL_MODE_SHUTDOWN:
-            return "shutdown"
-        else:
-            return "unknown"  # Likely a new state we don't know about
+            returnval = "shutdown"
+        return returnval
 
 
 class HeatingState(TraegerBaseSensor):
@@ -190,21 +184,22 @@ class HeatingState(TraegerBaseSensor):
     # Generic Properties
     @property
     def icon(self):
+        """Set the default MDI Icon"""
         if self.state == "over_temp":
             return "mdi:fire-alert"
-        else:
-            return "mdi:fire"
+        return "mdi:fire"
 
     # Sensor Properties
     @property
-    def state(self):
+    def state(self):  # pylint: disable=too-many-branches,too-many-statements
+        """Return the state of the sensor."""
         if self.grill_state is None:
             return "idle"
 
         target_temp = self.grill_state["set"]
         grill_mode = self.grill_state["system_status"]
         current_temp = self.grill_state["grill"]
-        target_changed = True if target_temp != self.previous_target_temp else False
+        target_changed = target_temp != self.previous_target_temp
         min_cook_temp = (GRILL_MIN_TEMP_C if self.grill_units == TEMP_CELSIUS
                          else GRILL_MIN_TEMP_F)
         temp_swing = 11 if self.grill_units == TEMP_CELSIUS else 20
@@ -217,7 +212,7 @@ class HeatingState(TraegerBaseSensor):
             else:
                 state = "heating"
         elif grill_mode in self.cook_modes:
-            if self.previous_state == "heating" or self.previous_state == "preheating":
+            if self.previous_state in ('heating', 'preheating'):
                 if current_temp >= target_temp:
                     state = "at_temp"
                 else:
@@ -260,11 +255,11 @@ class HeatingState(TraegerBaseSensor):
 
         self.previous_target_temp = target_temp
         self.previous_state = state
-
         return state
 
 
 class ProbeState(TraegerBaseSensor):
+    """Traeger Probe Heating State class."""
 
     def __init__(self, client, grill_id, sensor_id):
         super().__init__(client, grill_id, f"Probe State {sensor_id}",
@@ -299,31 +294,32 @@ class ProbeState(TraegerBaseSensor):
     @property
     def available(self):
         """Reports unavailable when the probe is not connected"""
-
         if (self.grill_state is None or
-                self.grill_state["connected"] == False or
+                self.grill_state["connected"] is False or
                 self.grill_accessory is None):
             # Reset probe alarm if accessory becomes unavailable
             self.probe_alarm = False
             return False
-        else:
-            connected = self.grill_accessory["con"]
-            # Reset probe alarm if accessory is not connected
-            if not connected:
-                self.probe_alarm = False
-            return connected
+        connected = self.grill_accessory["con"]
+        # Reset probe alarm if accessory is not connected
+        if not connected:
+            self.probe_alarm = False
+        return connected
 
     @property
     def unique_id(self):
+        """Return the unique id."""
         return f"{self.grill_id}_probe_state_{self.sensor_id}"
 
     @property
     def icon(self):
+        """Set the default MDI Icon"""
         return "mdi:thermometer"
 
     # Sensor Properties
     @property
     def state(self):
+        """Return the state of the sensor."""
         if self.grill_accessory is None:
             return "idle"
 

@@ -102,6 +102,8 @@ Step Type | Description
 `service[].probe_act_temp_adv` | Probe Temp at which the State will advance.
 `service[].shutdown` | Call Grill Shutdown.
 
+## InAction DEMO
+![inaction][inaction]
 
 
 ## Configuration is done in the UI
@@ -121,6 +123,7 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 [lovelaceimg]: images/lovelace.png
 [probeimg]: images/probe.png
 [grillimg]: images/grill.png
+[inaction]: images/CodeSpace_CooksCycle.gif
 [license-shield]: https://img.shields.io/github/license/custom-components/blueprint.svg?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/v/release/njobrien1006/hass_traeger.svg?style=for-the-badge
 [releases]: https://github.com/njobrien1006/hass_traeger/releases
