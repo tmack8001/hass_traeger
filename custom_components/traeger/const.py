@@ -5,7 +5,7 @@ from homeassistant.const import TEMP_CELSIUS, TEMP_FAHRENHEIT
 NAME = "Traeger"
 DOMAIN = "traeger"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "2023.06.16"
+VERSION = "2023.10.06"
 ATTRIBUTION = ""
 ISSUE_URL = "https://github.com/njobrien1006/hass_traeger/issues"
 
