@@ -1,6 +1,4 @@
 set_custom_cook:
-  name: Set Cook Cycle
-  description: Set Custom Cook Cycle Steps
   fields:
     entity_id:
       description: "Number Entity that serves Custom Cook Steps."
@@ -12,9 +10,8 @@ set_custom_cook:
           integration: traeger
           domain: number
     steps:
-      description: |
-        List of steps to perform.
       required: true
+      #Checkout https://github.com/njobrien1006/hass_traeger/blob/master/config/.storage/lovelace#L126 for more examples.
       default:
         - #1 Set temp and smoke, advance on probe fired, or act_temp_adv
           set_temp: 180             #Set grill temp
@@ -53,23 +50,32 @@ set_custom_cook:
       selector:
         object:
     set_temp:
-      description: "Set Grill Temp. *Only up to your grill's MaxTemp."
+      required: false
+      example: 180
     smoke:
-      description: "Set Smoke Mode 1 or 0. *Only Avail if grill supports"
+      required: false
+      example: 1
     keepwarm:
-      description: "Set keepwarm, Mode 1 or 0."
+      required: false
+      example: 0
     time_set:
-      description: "Set Timer in Minutes."
+      required: false
+      example: 60
     use_timer:
-      description: "Use Timer to Advance State. *Only applies to current state."
+      required: false
+      example: 1
     min_delta:
-      description: "Min DELTA temp between Grill and Probe. *Requires `max_grill_delta_temp`."
+      required: false
+      example: 30
     max_grill_delta_temp:
-      description: "Max Temp it will increase to from probe `min_delta`. *Requires `min_delta`."
+      required: false
+      example: 250
     act_temp_adv:
-      description: "Grill Temp at which the State will advance."
+      required: false
+      example: 400
     probe_act_temp_adv:
-      description: "Probe Temp at which the State will advance."
+      required: false
+      example: 180
     shutdown:
-      description: "Call Grill Shutdown."
-
+      required: false
+      example: 1
