@@ -8,7 +8,7 @@ from homeassistant.components.climate.const import (
     SUPPORT_PRESET_MODE,
     SUPPORT_TARGET_TEMPERATURE,
 )
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT
+from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 
 from .const import (
     DOMAIN,
@@ -59,9 +59,9 @@ class TraegerBaseClimate(ClimateEntity, TraegerBaseEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement used by the grill."""
-        if self.grill_units == TEMP_CELSIUS:
-            return TEMP_CELSIUS
-        return TEMP_FAHRENHEIT
+        if self.grill_units == UnitOfTemperature.CELSIUS:
+            return UnitOfTemperature.CELSIUS
+        return UnitOfTemperature.FAHRENHEIT
 
     @property
     def target_temperature_step(self):
@@ -123,7 +123,7 @@ class TraegerClimateEntity(TraegerBaseClimate):
     @property
     def min_temp(self):
         """Return the minimum temperature."""
-        if self.grill_units == TEMP_CELSIUS:
+        if self.grill_units == UnitOfTemperature.CELSIUS:
             return GRILL_MIN_TEMP_C
         return GRILL_MIN_TEMP_F
 
@@ -258,7 +258,7 @@ class AccessoryTraegerClimateEntity(TraegerBaseClimate):
     def max_temp(self):
         """Return the maximum temperature."""
         # this was the max the traeger would let me set
-        if self.grill_units == TEMP_CELSIUS:
+        if self.grill_units == UnitOfTemperature.CELSIUS:
             return 100
         return 215
 
@@ -266,7 +266,7 @@ class AccessoryTraegerClimateEntity(TraegerBaseClimate):
     def min_temp(self):
         """Return the minimum temperature."""
         # this was the min the traeger would let me set
-        if self.grill_units == TEMP_CELSIUS:
+        if self.grill_units == UnitOfTemperature.CELSIUS:
             return 27
         return 80
 
